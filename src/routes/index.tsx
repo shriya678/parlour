@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import heroImg from "@/assets/hero.jpg";
 import interiorImg from "@/assets/interior.jpg";
 import serviceHair from "@/assets/service-hair.jpg";
@@ -316,7 +317,30 @@ function Testimonials() {
   );
 }
 
+const BOOKING_EMAIL = "hello@maisonlilas.co";
+
 function Booking() {
+  const [form, setForm] = useState({ name: "", email: "", service: "", note: "" });
+
+  const update = (key: keyof typeof form) => (value: string) =>
+    setForm((prev) => ({ ...prev, [key]: value }));
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const subject = `Booking enquiry — ${form.name || "New guest"}`;
+    const body = [
+      `Name: ${form.name}`,
+      `Email: ${form.email}`,
+      `Preferred service: ${form.service}`,
+      "",
+      "Note:",
+      form.note,
+    ].join("\n");
+    window.location.href = `mailto:${BOOKING_EMAIL}?subject=${encodeURIComponent(
+      subject,
+    )}&body=${encodeURIComponent(body)}`;
+  };
+
   return (
     <section id="booking" className="mx-auto max-w-7xl px-6 py-28 md:px-10 md:py-40">
       <div className="grid gap-16 md:grid-cols-[1fr_auto] md:items-end md:gap-24">
@@ -330,13 +354,13 @@ function Booking() {
             bookings are rare, but we keep a quiet list — write to us.
           </p>
 
-          <form className="mt-12 grid max-w-xl gap-5" onSubmit={(e) => e.preventDefault()}>
+          <form className="mt-12 grid max-w-xl gap-5" onSubmit={handleSubmit}>
             <div className="grid gap-5 sm:grid-cols-2">
-              <Field label="Name" type="text" placeholder="Your full name" />
-              <Field label="Email" type="email" placeholder="you@example.com" />
+              <Field label="Name" type="text" placeholder="Your full name" value={form.name} onChange={update("name")} required />
+              <Field label="Email" type="email" placeholder="you@example.com" value={form.email} onChange={update("email")} required />
             </div>
-            <Field label="Preferred service" type="text" placeholder="Cut & style, colour, skin…" />
-            <Field label="Anything we should know" type="text" placeholder="A note for the team" />
+            <Field label="Preferred service" type="text" placeholder="Cut & style, colour, skin…" value={form.service} onChange={update("service")} />
+            <Field label="Anything we should know" type="text" placeholder="A note for the team" value={form.note} onChange={update("note")} />
             <button
               type="submit"
               className="mt-4 inline-flex items-center justify-center gap-3 rounded-full bg-foreground px-8 py-4 text-sm uppercase tracking-[0.25em] text-background transition hover:bg-primary"
@@ -365,13 +389,30 @@ function Booking() {
   );
 }
 
-function Field({ label, type, placeholder }: { label: string; type: string; placeholder: string }) {
+function Field({
+  label,
+  type,
+  placeholder,
+  value,
+  onChange,
+  required,
+}: {
+  label: string;
+  type: string;
+  placeholder: string;
+  value: string;
+  onChange: (value: string) => void;
+  required?: boolean;
+}) {
   return (
     <label className="group block">
       <span className="block text-[0.65rem] uppercase tracking-[0.3em] text-muted-foreground">{label}</span>
       <input
         type={type}
         placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        required={required}
         className="mt-2 w-full border-b border-border bg-transparent py-3 text-base text-foreground placeholder:text-muted-foreground/60 outline-none transition focus:border-primary"
       />
     </label>
